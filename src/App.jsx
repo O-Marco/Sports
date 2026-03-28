@@ -8,9 +8,8 @@ import LinhaDeTempo from './components/LinhaDeTempo'
 import SecaoNoticias from './components/SecaoNoticias'
 
 function App() {
-  const [temaEscuro, setTemaEscuro] = useState(true)
+  const [temaEscuro, setTemaEscuro] = useState(false)
 
-  // Aplica a classe no body sempre que o tema mudar
   useEffect(() => {
     document.body.className = temaEscuro ? 'tema-escuro' : 'tema-claro'
   }, [temaEscuro])
@@ -20,14 +19,17 @@ function App() {
       <Navbar temaEscuro={temaEscuro} setTemaEscuro={setTemaEscuro} />
       <TickerNoticias temaEscuro={temaEscuro} />
 
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '1.5rem 2rem' }}>
-        <EventoDestaque />
+      {/* Hero fora do container — largura total */}
+      <EventoDestaque />
 
+      {/* Resto dentro do container */}
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '1.5rem 2rem' }}>
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '1rem',
-          marginTop: '1.5rem'
+          gridTemplateColumns: '3fr 2fr',
+          gap: '1.5rem',
+          marginTop: '1.5rem',
+          alignItems: 'start'
         }}>
           <PlacaresAoVivo temaEscuro={temaEscuro} />
           <TrendingsEsportivos temaEscuro={temaEscuro} />

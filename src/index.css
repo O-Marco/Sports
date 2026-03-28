@@ -1,19 +1,14 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
   min-height: 100vh;
   font-family: 'Inter', system-ui, sans-serif;
-  color: white;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 body.tema-escuro {
-  background-color: #040d18;
-  color: white;
+  background-color: #070e1a;
+  color: #f1f5f9;
 }
 
 body.tema-claro {
@@ -23,4 +18,4 @@ body.tema-claro {
 
 ::-webkit-scrollbar { height: 4px; width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #334155; border-radius: 999px; }
+::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 999px; }

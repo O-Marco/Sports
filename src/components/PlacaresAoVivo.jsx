@@ -1,135 +1,85 @@
-// src/components/PlacaresAoVivo.jsx
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
+import TituloSecao from './TituloSecao'
 
-// Cada modalidade tem uma cor diferente
-const coresPorModalidade = {
-  'Futebol':  { fundo: '#064e3b', destaque: '#34d399' },
-  'Basquete': { fundo: '#1e1b4b', destaque: '#818cf8' },
-  'E-Sports': { fundo: '#4a1942', destaque: '#e879f9' },
-}
-
-function CartaoJogo({ jogo }) {
-  const cores = coresPorModalidade[jogo.modalidade] || { fundo: '#1e293b', destaque: '#94a3b8' }
-
-  return (
-    <div style={{
-      background: cores.fundo,
-      borderRadius: '12px',
-      padding: '1.2rem',
-      border: `1px solid ${cores.destaque}33`,
-      flex: '1',
-      minWidth: '200px'
-    }}>
-      {/* Badge da modalidade */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '1rem'
-      }}>
-        <span style={{
-          background: cores.destaque + '22',
-          color: cores.destaque,
-          padding: '2px 10px',
-          borderRadius: '999px',
-          fontSize: '0.7rem',
-          fontWeight: 'bold',
-          letterSpacing: '1px'
-        }}>
-          {jogo.modalidade.toUpperCase()}
-        </span>
-        <span style={{
-          color: '#ef4444',
-          fontSize: '0.7rem',
-          fontWeight: 'bold',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px'
-        }}>
-          <span style={{
-            width: '6px', height: '6px',
-            background: '#ef4444',
-            borderRadius: '50%',
-            display: 'inline-block',
-            animation: 'piscar 1s infinite'
-          }}/>
-          AO VIVO · {jogo.minuto}'
-        </span>
-      </div>
-
-      {/* Placar */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: '0.5rem'
-      }}>
-        <span style={{ color: 'white', fontWeight: 'bold', fontSize: '0.95rem', flex: 1 }}>
-          {jogo.time_casa}
-        </span>
-        <span style={{
-  color: cores.destaque,
-  fontSize: '1.4rem',
-  fontWeight: 'bold',
-  letterSpacing: '2px',
-  padding: '0 0.5rem',
-  whiteSpace: 'nowrap'   // ← isso impede a quebra de linha
-}}>
-  {jogo.gols_casa} · {jogo.gols_visitante}
-</span>
-        <span style={{ color: 'white', fontWeight: 'bold', fontSize: '0.95rem', flex: 1, textAlign: 'right' }}>
-          {jogo.time_visitante}
-        </span>
-      </div>
-    </div>
-  )
-}
-
-function PlacaresAoVivo() {
+function PlacaresAoVivo({ temaEscuro }) {
   const [placares, setPlacares] = useState([])
 
   useEffect(() => {
-    async function buscarPlacares() {
+    async function buscar() {
       const { data } = await supabase
         .from('placares')
         .select('*')
         .eq('status', 'ao vivo')
-
       if (data) setPlacares(data)
     }
-
-    // Busca imediatamente ao carregar
-    buscarPlacares()
-
-    // Atualiza a cada 30 segundos automaticamente
-    const intervalo = setInterval(buscarPlacares, 30000)
-    return () => clearInterval(intervalo)
+    buscar()
+    const i = setInterval(buscar, 30000)
+    return () => clearInterval(i)
   }, [])
 
+  const bgCard  = temaEscuro ? '#0d1625' : '#ffffff'
+  const borda   = temaEscuro ? '#1e293b' : '#e2e8f0'
+  const corTime = temaEscuro ? '#f1f5f9' : '#0f172a'
+  const corMod  = temaEscuro ? '#64748b' : '#94a3b8'
+
   return (
-    <div style={{ marginTop: '1.5rem' }}>
-      <p style={{
-        color: '#94a3b8',
-        fontSize: '0.75rem',
-        letterSpacing: '2px',
-        marginBottom: '0.8rem'
-      }}>
-        PLACARES AO VIVO
-      </p>
+    <div>
+      <TituloSecao texto="Placares ao vivo" temaEscuro={temaEscuro} />
+      <style>{`@keyframes piscar { 0%,100%{opacity:1} 50%{opacity:0} }`}</style>
 
-      <style>{`
-        @keyframes piscar {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0; }
-        }
-      `}</style>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        {placares.map(jogo => (
+          <div key={jogo.id} style={{
+            background: bgCard,
+            borderRadius: '10px',
+            border: `1px solid ${borda}`,
+            overflow: 'hidden',
+          }}>
+            {/* Barra topo */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '5px 16px',
+              borderBottom: `1px solid ${borda}`,
+              background: temaEscuro ? '#0a1020' : '#f8fafc',
+            }}>
+              <span style={{ color: corMod, fontSize: '0.68rem', fontWeight: '600', letterSpacing: '1.5px' }}>
+                {jogo.modalidade.toUpperCase()}
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#ef4444', fontSize: '0.68rem', fontWeight: '600' }}>
+                <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'piscar 1s infinite' }}/>
+                AO VIVO · {jogo.minuto}'
+              </span>
+            </div>
 
-      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-        {placares.length === 0
-          ? <p style={{ color: '#475569' }}>Carregando placares...</p>
-          : placares.map(jogo => <CartaoJogo key={jogo.id} jogo={jogo} />)
-        }
+            {/* Placar */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr auto 1fr',
+              alignItems: 'center',
+              padding: '14px 20px',
+              gap: '1rem',
+            }}>
+              <span style={{ color: corTime, fontWeight: '600', fontSize: '0.95rem' }}>
+                {jogo.time_casa}
+              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ color: '#3b82f6', fontFamily: 'monospace', fontSize: '1.6rem', fontWeight: 'bold', minWidth: '28px', textAlign: 'center' }}>
+                  {jogo.gols_casa}
+                </span>
+                <span style={{ color: temaEscuro ? '#1e293b' : '#cbd5e1', fontSize: '1.2rem' }}>—</span>
+                <span style={{ color: '#3b82f6', fontFamily: 'monospace', fontSize: '1.6rem', fontWeight: 'bold', minWidth: '28px', textAlign: 'center' }}>
+                  {jogo.gols_visitante}
+                </span>
+              </div>
+              <span style={{ color: corTime, fontWeight: '600', fontSize: '0.95rem', textAlign: 'right' }}>
+                {jogo.time_visitante}
+              </span>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   )

@@ -5,9 +5,7 @@ function formatarTempo(dataString) {
   const agora = new Date()
   const alvo = new Date(dataString)
   const diferenca = alvo - agora
-
   if (diferenca <= 0) return { dias: '00', horas: '00', minutos: '00', segundos: '00' }
-
   return {
     dias:     String(Math.floor(diferenca / (1000 * 60 * 60 * 24))).padStart(2, '0'),
     horas:    String(Math.floor((diferenca % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0'),
@@ -22,7 +20,6 @@ function EventoDestaque() {
   const [tempo, setTempo] = useState({})
   const [fadeIn, setFadeIn] = useState(true)
 
-  // Busca todos os eventos futuros
   useEffect(() => {
     async function buscarEventos() {
       const { data } = await supabase
@@ -30,28 +27,25 @@ function EventoDestaque() {
         .select('*')
         .gt('data_evento', new Date().toISOString())
         .order('data_evento', { ascending: true })
-
       if (data) setEventos(data)
     }
     buscarEventos()
   }, [])
 
-  // Troca o slide a cada 5 segundos com animação de fade
   const proximoSlide = useCallback(() => {
     setFadeIn(false)
     setTimeout(() => {
       setIndiceAtual(i => (i + 1) % eventos.length)
       setFadeIn(true)
-    }, 400)
+    }, 500)
   }, [eventos.length])
 
   useEffect(() => {
     if (eventos.length <= 1) return
-    const intervalo = setInterval(proximoSlide, 5000)
+    const intervalo = setInterval(proximoSlide, 6000)
     return () => clearInterval(intervalo)
   }, [eventos.length, proximoSlide])
 
-  // Atualiza o cronômetro a cada segundo
   useEffect(() => {
     if (!eventos[indiceAtual]) return
     const tick = setInterval(() => {
@@ -61,122 +55,132 @@ function EventoDestaque() {
   }, [eventos, indiceAtual])
 
   if (eventos.length === 0) return (
-    <div style={{ height: '340px', background: '#0a1628', borderRadius: '12px' }} />
+    <div style={{ height: '520px', background: '#080f1a' }} />
   )
 
   const evento = eventos[indiceAtual]
-  const cor = evento.cor_destaque || '#38bdf8'
+  const cor = evento.cor_destaque || '#3b82f6'
 
   return (
-    <div style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', height: '340px' }}>
-
-      {/* Imagem de fundo */}
+    <div style={{
+      position: 'relative',
+      width: '100%',
+      height: '520px',
+      overflow: 'hidden',
+      background: '#080f1a',
+    }}>
+      {/* Imagem de fundo — full width */}
       <div style={{
         position: 'absolute', inset: 0,
         backgroundImage: `url(${evento.imagem_url})`,
         backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        transition: 'opacity 0.4s ease',
+        backgroundPosition: 'center top',
+        transition: 'opacity 0.5s ease',
         opacity: fadeIn ? 1 : 0,
       }}/>
 
-      {/* Overlay escuro para legibilidade */}
+      {/* Overlay gradiente de baixo para cima — igual TNT */}
       <div style={{
         position: 'absolute', inset: 0,
-        background: 'linear-gradient(to right, rgba(4,13,24,0.95) 40%, rgba(4,13,24,0.5) 100%)',
+        background: 'linear-gradient(to top, rgba(0,0,0,0.97) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.15) 100%)',
       }}/>
 
-      {/* Conteúdo */}
+      {/* Conteúdo centralizado na parte de baixo */}
       <div style={{
-        position: 'relative',
-        height: '100%',
-        padding: '2rem',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
+        position: 'absolute',
+        bottom: 0, left: 0, right: 0,
+        padding: '0 4rem 2.5rem',
         opacity: fadeIn ? 1 : 0,
-        transition: 'opacity 0.4s ease',
+        transition: 'opacity 0.5s ease',
       }}>
-        {/* Badge */}
-        <span style={{
-          display: 'inline-block',
-          background: cor + '33',
+        {/* Badge de modalidade */}
+        <p style={{
           color: cor,
-          border: `1px solid ${cor}66`,
-          padding: '4px 14px',
-          borderRadius: '999px',
-          fontSize: '0.7rem',
-          fontWeight: 'bold',
-          letterSpacing: '2px',
-          marginBottom: '1rem',
-          width: 'fit-content'
+          fontSize: '0.75rem',
+          fontWeight: '700',
+          letterSpacing: '3px',
+          textTransform: 'uppercase',
+          marginBottom: '0.6rem',
         }}>
-          EVENTO PRINCIPAL · {evento.modalidade?.toUpperCase()}
-        </span>
+          {evento.modalidade}
+        </p>
 
-        {/* Título */}
-        <h2 style={{
+        {/* Título grande estilo TNT */}
+        <h1 style={{
           color: 'white',
-          fontSize: '2.2rem',
-          fontWeight: 'bold',
-          lineHeight: 1.2,
+          fontSize: 'clamp(1.6rem, 3.5vw, 2.8rem)',
+          fontWeight: '900',
+          lineHeight: 1.15,
           marginBottom: '0.5rem',
-          maxWidth: '500px'
+          maxWidth: '800px',
+          textShadow: '0 2px 12px rgba(0,0,0,0.5)',
         }}>
           {evento.nome}
-        </h2>
+        </h1>
 
-        <p style={{ color: '#94a3b8', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
+        <p style={{
+          color: '#94a3b8',
+          fontSize: '0.9rem',
+          marginBottom: '1.5rem',
+        }}>
           {evento.descricao}
         </p>
 
-        {/* Cronômetro estilo Lance! */}
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
+        {/* Cronômetro compacto */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: '600', marginRight: '0.5rem', letterSpacing: '1px' }}>
+            COMEÇA EM
+          </span>
           {[
             { valor: tempo.dias,     label: 'dias' },
             { valor: tempo.horas,    label: 'hr' },
             { valor: tempo.minutos,  label: 'min' },
             { valor: tempo.segundos, label: 'seg' },
-          ].map(({ valor, label }) => (
-            <div key={label} style={{ textAlign: 'center' }}>
-              <div style={{
-                background: '#040d18cc',
-                border: `1px solid ${cor}44`,
-                borderRadius: '8px',
-                padding: '8px 16px',
-                fontFamily: 'monospace',
-                fontSize: '2rem',
-                fontWeight: 'bold',
-                color: cor,
-                minWidth: '64px'
-              }}>
-                {valor || '00'}
+          ].map(({ valor, label }, i) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{
+                  background: 'rgba(255,255,255,0.08)',
+                  border: `1px solid rgba(255,255,255,0.1)`,
+                  borderRadius: '6px',
+                  padding: '6px 14px',
+                  fontFamily: 'monospace',
+                  fontSize: '1.4rem',
+                  fontWeight: 'bold',
+                  color: 'white',
+                  minWidth: '54px',
+                  textAlign: 'center',
+                }}>
+                  {valor || '00'}
+                </div>
+                <div style={{ color: '#475569', fontSize: '0.62rem', marginTop: '3px' }}>
+                  {label}
+                </div>
               </div>
-              <div style={{ color: '#475569', fontSize: '0.7rem', marginTop: '4px' }}>
-                {label}
-              </div>
+              {i < 3 && <span style={{ color: '#334155', fontSize: '1.2rem', marginBottom: '14px' }}>:</span>}
             </div>
           ))}
         </div>
       </div>
 
-      {/* Indicadores de slide (bolinhas) */}
+      {/* Bolinhas de navegação */}
       <div style={{
         position: 'absolute',
-        bottom: '1.2rem',
-        right: '1.5rem',
+        bottom: '1.5rem',
+        right: '2rem',
         display: 'flex',
-        gap: '6px'
+        gap: '6px',
+        alignItems: 'center',
       }}>
         {eventos.map((_, i) => (
           <button
             key={i}
             onClick={() => { setFadeIn(false); setTimeout(() => { setIndiceAtual(i); setFadeIn(true) }, 400) }}
             style={{
-              width: i === indiceAtual ? '20px' : '6px',
+              width: i === indiceAtual ? '24px' : '6px',
               height: '6px',
               borderRadius: '999px',
-              background: i === indiceAtual ? cor : '#334155',
+              background: i === indiceAtual ? 'white' : 'rgba(255,255,255,0.3)',
               border: 'none',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
