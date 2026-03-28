@@ -17,7 +17,7 @@ function tempoRelativo(dataString) {
   return `${Math.floor(diff / 1440)}d atrás`
 }
 
-function SecaoNoticias() {
+function SecaoNoticias({ temaEscuro }) {
   const [noticias, setNoticias] = useState([])
 
   useEffect(() => {
@@ -32,6 +32,16 @@ function SecaoNoticias() {
     buscar()
   }, [])
 
+  const bgCard      = temaEscuro ? '#0a1628' : '#ffffff'
+  const bgHover     = temaEscuro ? '#0f1e35' : '#f8fafc'
+  const bordaCard   = temaEscuro ? '#1e293b' : '#e2e8f0'
+  const bordaHover  = temaEscuro ? '#334155' : '#cbd5e1'
+  const corTitulo   = temaEscuro ? '#ffffff' : '#0f172a'
+  const corResumo   = temaEscuro ? '#94a3b8' : '#475569'
+  const corMeta     = temaEscuro ? '#475569' : '#94a3b8'
+  const corSecao    = temaEscuro ? '#ffffff' : '#0f172a'
+  const corLinha    = temaEscuro ? '#1e293b' : '#e2e8f0'
+
   const destaque = noticias.find(n => n.destaque) || noticias[0]
   const secundarias = noticias.filter(n => n.id !== destaque?.id).slice(0, 4)
 
@@ -39,12 +49,11 @@ function SecaoNoticias() {
 
   return (
     <div style={{ marginTop: '2rem' }}>
-      {/* Título da seção */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem' }}>
-        <h2 style={{ color: 'white', fontSize: '1.2rem', fontWeight: 'bold' }}>
+        <h2 style={{ color: corSecao, fontSize: '1.2rem', fontWeight: 'bold' }}>
           Últimas Notícias
         </h2>
-        <div style={{ flex: 1, height: '1px', background: '#1e293b' }}/>
+        <div style={{ flex: 1, height: '1px', background: corLinha }}/>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -55,8 +64,8 @@ function SecaoNoticias() {
             gridRow: 'span 2',
             borderRadius: '12px',
             overflow: 'hidden',
-            background: '#0a1628',
-            border: '1px solid #1e293b',
+            background: bgCard,
+            border: `1px solid ${bordaCard}`,
             cursor: 'pointer',
             position: 'relative',
             minHeight: '320px',
@@ -64,7 +73,6 @@ function SecaoNoticias() {
             flexDirection: 'column',
             justifyContent: 'flex-end',
           }}>
-            {/* Imagem de fundo */}
             {destaque.imagem_url && (
               <div style={{
                 position: 'absolute', inset: 0,
@@ -73,12 +81,10 @@ function SecaoNoticias() {
                 backgroundPosition: 'center',
               }}/>
             )}
-            {/* Overlay */}
             <div style={{
               position: 'absolute', inset: 0,
-              background: 'linear-gradient(to top, rgba(4,13,24,0.97) 40%, rgba(4,13,24,0.3) 100%)',
+              background: 'linear-gradient(to top, rgba(4,13,24,0.97) 40%, rgba(4,13,24,0.2) 100%)',
             }}/>
-            {/* Conteúdo */}
             <div style={{ position: 'relative', padding: '1.5rem' }}>
               <span style={{
                 background: coresCategorias[destaque.categoria] || '#475569',
@@ -91,10 +97,10 @@ function SecaoNoticias() {
                 marginBottom: '0.8rem',
                 display: 'inline-block'
               }}>
-                {destaque.categoria.toUpperCase()}
+                {destaque.categoria?.toUpperCase()}
               </span>
               <h3 style={{
-                color: 'white',
+                color: '#ffffff',
                 fontSize: '1.2rem',
                 fontWeight: 'bold',
                 lineHeight: 1.3,
@@ -102,10 +108,10 @@ function SecaoNoticias() {
               }}>
                 {destaque.titulo}
               </h3>
-              <p style={{ color: '#94a3b8', fontSize: '0.85rem', lineHeight: 1.5, marginBottom: '0.8rem' }}>
+              <p style={{ color: corResumo, fontSize: '0.85rem', lineHeight: 1.5, marginBottom: '0.8rem' }}>
                 {destaque.resumo}
               </p>
-              <span style={{ color: '#475569', fontSize: '0.75rem' }}>
+              <span style={{ color: '#64748b', fontSize: '0.75rem' }}>
                 {icones[destaque.modalidade]} {destaque.modalidade} · {tempoRelativo(destaque.criado_em)}
               </span>
             </div>
@@ -114,24 +120,29 @@ function SecaoNoticias() {
 
         {/* Cards secundários */}
         {secundarias.map(noticia => (
-          <div key={noticia.id} style={{
-            borderRadius: '10px',
-            background: '#0a1628',
-            border: '1px solid #1e293b',
-            padding: '1rem',
-            cursor: 'pointer',
-            display: 'flex',
-            gap: '1rem',
-            transition: 'border-color 0.2s',
-          }}
-          onMouseEnter={e => e.currentTarget.style.borderColor = '#334155'}
-          onMouseLeave={e => e.currentTarget.style.borderColor = '#1e293b'}
+          <div key={noticia.id}
+            style={{
+              borderRadius: '10px',
+              background: bgCard,
+              border: `1px solid ${bordaCard}`,
+              padding: '1rem',
+              cursor: 'pointer',
+              display: 'flex',
+              gap: '1rem',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = bgHover
+              e.currentTarget.style.borderColor = bordaHover
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = bgCard
+              e.currentTarget.style.borderColor = bordaCard
+            }}
           >
-            {/* Imagem pequena */}
             {noticia.imagem_url && (
               <div style={{
-                width: '80px',
-                height: '80px',
+                width: '80px', height: '80px',
                 borderRadius: '8px',
                 backgroundImage: `url(${noticia.imagem_url})`,
                 backgroundSize: 'cover',
@@ -150,10 +161,10 @@ function SecaoNoticias() {
                 display: 'inline-block',
                 marginBottom: '0.4rem'
               }}>
-                {noticia.categoria.toUpperCase()}
+                {noticia.categoria?.toUpperCase()}
               </span>
               <p style={{
-                color: 'white',
+                color: corTitulo,
                 fontSize: '0.88rem',
                 fontWeight: 'bold',
                 lineHeight: 1.3,
@@ -161,7 +172,7 @@ function SecaoNoticias() {
               }}>
                 {noticia.titulo}
               </p>
-              <span style={{ color: '#475569', fontSize: '0.72rem' }}>
+              <span style={{ color: corMeta, fontSize: '0.72rem' }}>
                 {icones[noticia.modalidade]} {noticia.modalidade} · {tempoRelativo(noticia.criado_em)}
               </span>
             </div>

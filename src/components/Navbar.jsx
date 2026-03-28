@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 
 const categorias = ['Futebol', 'Basquete', 'E-Sports', 'MMA', 'Atletismo']
 
-function Navbar() {
+function Navbar({ temaEscuro, setTemaEscuro }) {
   const [hora, setHora] = useState('')
 
   useEffect(() => {
@@ -14,10 +14,16 @@ function Navbar() {
     return () => clearInterval(tick)
   }, [])
 
+  const bg = temaEscuro ? '#040d18' : '#ffffff'
+  const borda = temaEscuro ? '#1e293b' : '#e2e8f0'
+  const corTexto = temaEscuro ? '#64748b' : '#475569'
+  const corHover = temaEscuro ? '#1e293b' : '#f1f5f9'
+  const corLogo = temaEscuro ? 'white' : '#0f172a'
+
   return (
     <nav style={{
-      background: '#040d18',
-      borderBottom: '1px solid #1e293b',
+      background: bg,
+      borderBottom: `1px solid ${borda}`,
       padding: '0 2rem',
       display: 'flex',
       alignItems: 'center',
@@ -26,15 +32,16 @@ function Navbar() {
       position: 'sticky',
       top: 0,
       zIndex: 100,
+      transition: 'background 0.3s ease',
     }}>
       {/* Logo */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <div style={{ display: 'flex', gap: '4px' }}>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#34d399', display: 'block' }}/>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#818cf8', display: 'block' }}/>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#e879f9', display: 'block' }}/>
+          {['#34d399','#818cf8','#e879f9'].map(c => (
+            <span key={c} style={{ width: 8, height: 8, borderRadius: '50%', background: c, display: 'block' }}/>
+          ))}
         </div>
-        <span style={{ color: 'white', fontWeight: 'bold', fontSize: '1.1rem', letterSpacing: '-0.5px' }}>
+        <span style={{ color: corLogo, fontWeight: 'bold', fontSize: '1.1rem', letterSpacing: '-0.5px' }}>
           Sports<span style={{ color: '#38bdf8' }}>Dash</span>
         </span>
       </div>
@@ -45,26 +52,47 @@ function Navbar() {
           <button key={cat} style={{
             background: 'transparent',
             border: 'none',
-            color: '#64748b',
+            color: corTexto,
             padding: '6px 14px',
             borderRadius: '6px',
             cursor: 'pointer',
             fontSize: '0.85rem',
             transition: 'all 0.2s',
           }}
-          onMouseEnter={e => { e.target.style.color = 'white'; e.target.style.background = '#1e293b' }}
-          onMouseLeave={e => { e.target.style.color = '#64748b'; e.target.style.background = 'transparent' }}
+          onMouseEnter={e => { e.target.style.color = temaEscuro ? 'white' : '#0f172a'; e.target.style.background = corHover }}
+          onMouseLeave={e => { e.target.style.color = corTexto; e.target.style.background = 'transparent' }}
           >
             {cat}
           </button>
         ))}
       </div>
 
-      {/* Relógio + badge ao vivo */}
+      {/* Direita: relógio + tema + ao vivo */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <span style={{ color: '#334155', fontSize: '0.8rem', fontFamily: 'monospace' }}>
+        <span style={{ color: corTexto, fontSize: '0.8rem', fontFamily: 'monospace' }}>
           {hora}
         </span>
+
+        {/* Botão de tema */}
+        <button
+          onClick={() => setTemaEscuro(!temaEscuro)}
+          style={{
+            background: temaEscuro ? '#1e293b' : '#e2e8f0',
+            border: 'none',
+            borderRadius: '999px',
+            padding: '6px 14px',
+            cursor: 'pointer',
+            fontSize: '0.8rem',
+            color: temaEscuro ? '#94a3b8' : '#475569',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            transition: 'all 0.2s'
+          }}
+        >
+          {temaEscuro ? '☀️ Modo Claro' : '🌙 Modo Escuro'}
+        </button>
+
         <span style={{
           background: '#dc2626',
           color: 'white',

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import Navbar from './components/Navbar'
 import TickerNoticias from './components/TickerNoticias'
 import EventoDestaque from './components/EventoDestaque'
@@ -7,21 +8,33 @@ import LinhaDeTempo from './components/LinhaDeTempo'
 import SecaoNoticias from './components/SecaoNoticias'
 
 function App() {
-  return (
-    <div style={{ minHeight: '100vh', background: '#040d18' }}>
-      <Navbar />
-      <TickerNoticias />
+  const [temaEscuro, setTemaEscuro] = useState(true)
 
-      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '2rem' }}>
+  // Aplica a classe no body sempre que o tema mudar
+  useEffect(() => {
+    document.body.className = temaEscuro ? 'tema-escuro' : 'tema-claro'
+  }, [temaEscuro])
+
+  return (
+    <div>
+      <Navbar temaEscuro={temaEscuro} setTemaEscuro={setTemaEscuro} />
+      <TickerNoticias temaEscuro={temaEscuro} />
+
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '1.5rem 2rem' }}>
         <EventoDestaque />
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1.5rem' }}>
-          <PlacaresAoVivo />
-          <TrendingsEsportivos />
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '1rem',
+          marginTop: '1.5rem'
+        }}>
+          <PlacaresAoVivo temaEscuro={temaEscuro} />
+          <TrendingsEsportivos temaEscuro={temaEscuro} />
         </div>
 
-        <SecaoNoticias />
-        <LinhaDeTempo />
+        <SecaoNoticias temaEscuro={temaEscuro} />
+        <LinhaDeTempo temaEscuro={temaEscuro} />
       </div>
     </div>
   )
