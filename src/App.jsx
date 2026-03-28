@@ -6,6 +6,7 @@ import PlacaresAoVivo from './components/PlacaresAoVivo'
 import TrendingsEsportivos from './components/TrendingsEsportivos'
 import LinhaDeTempo from './components/LinhaDeTempo'
 import SecaoNoticias from './components/SecaoNoticias'
+import Rodape from './components/Rodape'
 
 function App() {
   const [temaEscuro, setTemaEscuro] = useState(false)
@@ -38,6 +39,7 @@ function App() {
         <SecaoNoticias temaEscuro={temaEscuro} />
         <LinhaDeTempo temaEscuro={temaEscuro} />
       </div>
+      <Rodape temaEscuro={temaEscuro} />
     </div>
   )
 }
