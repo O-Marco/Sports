@@ -94,7 +94,7 @@ function Navbar({ temaEscuro, setTemaEscuro }) {
           onMouseEnter={(e) => e.target.style.borderColor = '#00d1ff'}
           onMouseLeave={(e) => e.target.style.borderColor = '#333'}
         >
-          {temaEscuro ? '🌙' : '☀️'}
+          {temaEscuro ? '☀️' : '🌙'}
         </button>
 
         {/* HORA */}
