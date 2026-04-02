@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import TickerNoticias from './components/TickerNoticias'
 import Rodape from './components/Rodape'
@@ -31,17 +31,14 @@ function PaginaHome({ temaEscuro }) {
   )
 }
 
-function App() {
-  const [temaEscuro, setTemaEscuro] = useState(false)
-
-  useEffect(() => {
-    document.body.className = temaEscuro ? 'tema-escuro' : 'tema-claro'
-  }, [temaEscuro])
+function Layout({ temaEscuro, setTemaEscuro }) {
+  const location = useLocation()
+  const isAdmin = location.pathname === '/admin'
 
   return (
-    <BrowserRouter>
+    <>
       <Navbar temaEscuro={temaEscuro} setTemaEscuro={setTemaEscuro} />
-      <TickerNoticias temaEscuro={temaEscuro} />
+      {!isAdmin && <TickerNoticias temaEscuro={temaEscuro} />}
       <Routes>
         <Route path="/" element={<PaginaHome temaEscuro={temaEscuro} />} />
         <Route path="/placares" element={<PaginaPlacares temaEscuro={temaEscuro} />} />
@@ -51,7 +48,21 @@ function App() {
         <Route path="/eventos" element={<PaginaEventos temaEscuro={temaEscuro} />} />
         <Route path="/admin" element={<PainelAdmin temaEscuro={temaEscuro} />} />
       </Routes>
-      <Rodape temaEscuro={temaEscuro} />
+      {!isAdmin && <Rodape temaEscuro={temaEscuro} />}
+    </>
+  )
+}
+
+function App() {
+  const [temaEscuro, setTemaEscuro] = useState(false)
+
+  useEffect(() => {
+    document.body.className = temaEscuro ? 'tema-escuro' : 'tema-claro'
+  }, [temaEscuro])
+
+  return (
+    <BrowserRouter>
+      <Layout temaEscuro={temaEscuro} setTemaEscuro={setTemaEscuro} />
     </BrowserRouter>
   )
 }

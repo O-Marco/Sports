@@ -19,6 +19,14 @@ function Navbar({ temaEscuro, setTemaEscuro }) {
     return () => clearInterval(tick)
   }, [])
 
+  function handleLogoClick() {
+    if (window.location.pathname === '/') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } else {
+      navigate('/')
+    }
+  }
+
   return (
     <>
       <style>{`
@@ -38,14 +46,8 @@ function Navbar({ temaEscuro, setTemaEscuro }) {
           transition: color 0.15s ease, border-color 0.15s ease;
           white-space: nowrap;
         }
-        .nav-link:hover {
-          color: #ffffff;
-          border-bottom-color: #444;
-        }
-        .nav-link.active {
-          color: #ffffff;
-          border-bottom-color: #00d1ff;
-        }
+        .nav-link:hover { color: #ffffff; border-bottom-color: #444; }
+        .nav-link.active { color: #ffffff; border-bottom-color: #00d1ff; }
         .busca-input::placeholder { color: #555; }
         .busca-input:focus { outline: none; border-color: #00d1ff !important; }
       `}</style>
@@ -62,17 +64,9 @@ function Navbar({ temaEscuro, setTemaEscuro }) {
         top: 0,
         zIndex: 1000,
       }}>
-
-        {/* ESQUERDA: Logo + separador + links */}
         <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
           <span
-            onClick={() => {
-            if (window.location.pathname === '/') {
-            window.scrollTo({ top: 0, behavior: 'smooth' })
-            } else {
-              navigate('/')
-             }
-            }}
+            onClick={handleLogoClick}
             style={{
               color: 'white', fontWeight: '900', fontSize: '1.25rem',
               letterSpacing: '-0.5px', textTransform: 'uppercase',
@@ -98,10 +92,7 @@ function Navbar({ temaEscuro, setTemaEscuro }) {
           </div>
         </div>
 
-        {/* DIREITA */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-
-          {/* BUSCA */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <div style={{ overflow: 'hidden', width: buscaAberta ? '200px' : '0px', transition: 'width 0.35s cubic-bezier(0.4,0,0.2,1)' }}>
               <input
@@ -109,11 +100,7 @@ function Navbar({ temaEscuro, setTemaEscuro }) {
                 type="text"
                 placeholder="Buscar..."
                 autoFocus={buscaAberta}
-                style={{
-                  width: '200px', padding: '6px 12px',
-                  background: '#141414', border: '1px solid #2a2a2a',
-                  borderRadius: '4px', color: 'white', fontSize: '0.8rem',
-                }}
+                style={{ width: '200px', padding: '6px 12px', background: '#141414', border: '1px solid #2a2a2a', borderRadius: '4px', color: 'white', fontSize: '0.8rem' }}
               />
             </div>
             <button
@@ -130,7 +117,6 @@ function Navbar({ temaEscuro, setTemaEscuro }) {
 
           <div style={{ width: '1px', height: '18px', background: '#2a2a2a' }} />
 
-          {/* TEMA */}
           <button
             onClick={() => setTemaEscuro(!temaEscuro)}
             style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '1rem', display: 'flex', alignItems: 'center', padding: '4px', transition: 'color 0.2s' }}
@@ -142,7 +128,6 @@ function Navbar({ temaEscuro, setTemaEscuro }) {
 
           <div style={{ width: '1px', height: '18px', background: '#2a2a2a' }} />
 
-          {/* HORA + AO VIVO */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ background: '#ef4444', color: 'white', fontSize: '0.55rem', fontWeight: '900', letterSpacing: '1px', padding: '2px 6px', borderRadius: '3px' }}>
               AO VIVO
@@ -151,7 +136,6 @@ function Navbar({ temaEscuro, setTemaEscuro }) {
               {hora}
             </span>
           </div>
-
         </div>
       </nav>
     </>

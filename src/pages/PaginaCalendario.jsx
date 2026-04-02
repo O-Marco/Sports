@@ -1,156 +1,186 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 
-function formatarData(dataString) {
-  const d = new Date(dataString)
-  return {
-    diaSemana: d.toLocaleDateString('pt-BR', { weekday: 'short' }).toUpperCase().replace('.', ''),
-    dia: d.toLocaleDateString('pt-BR', { day: '2-digit' }),
-    mes: d.toLocaleDateString('pt-BR', { month: 'short' }).toUpperCase().replace('.', ''),
-    hora: d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-  }
+const COLORS = {
+  bg: '#030b15',
+  card: '#071120',
+  border: '#1e3a5f',
+  accent: '#3b82f6',
+  text: '#f1f5f9',
+  textMuted: '#64748b',
+  dayBg: '#0d1f35'
 }
 
-function diasAte(dataString) {
-  const diff = new Date(dataString) - new Date()
-  const dias = Math.ceil(diff / (1000 * 60 * 60 * 24))
-  if (dias === 0) return 'Hoje'
-  if (dias === 1) return 'Amanhã'
-  return `Em ${dias} dias`
-}
-
-function PaginaCalendario({ temaEscuro }) {
+function PaginaCalendario() {
   const [eventos, setEventos] = useState([])
-  const [filtro, setFiltro] = useState('Todos')
-  const [mesAtivo, setMesAtivo] = useState(null)
+  const [dataNavegacao, setDataNavegacao] = useState(new Date())
+  const [diaSelecionado, setDiaSelecionado] = useState(new Date().getDate())
 
   useEffect(() => {
     async function buscar() {
-      const { data } = await supabase
-        .from('linha_do_tempo')
-        .select('*')
-        .gt('data_evento', new Date().toISOString())
-        .order('data_evento', { ascending: true })
-      if (data) {
-        setEventos(data)
-        if (data.length > 0) {
-          const primMes = new Date(data[0].data_evento).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
-          setMesAtivo(primMes)
-        }
-      }
+      const { data } = await supabase.from('linha_do_tempo').select('*')
+      if (data) setEventos(data)
     }
     buscar()
   }, [])
 
-  const modalidades = ['Todos', ...new Set(eventos.map(e => e.modalidade).filter(Boolean))]
-  const filtrados = eventos.filter(e => filtro === 'Todos' || e.modalidade === filtro)
+  const ano = dataNavegacao.getFullYear()
+  const mes = dataNavegacao.getMonth()
+  const nomeMes = dataNavegacao.toLocaleDateString('pt-BR', { month: 'long' }).toUpperCase()
+  
+  const primeiroDiaSemana = new Date(ano, mes, 1).getDay()
+  const diasNoMes = new Date(ano, mes + 1, 0).getDate()
 
-  const porMes = filtrados.reduce((acc, ev) => {
-    const mes = new Date(ev.data_evento).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
-    if (!acc[mes]) acc[mes] = []
-    acc[mes].push(ev)
-    return acc
-  }, {})
+  const navegarMes = (offset) => {
+    setDataNavegacao(new Date(ano, mes + offset, 1))
+    setDiaSelecionado(null)
+  }
 
-  const bgCard   = temaEscuro ? '#0d1625' : '#ffffff'
-  const borda    = temaEscuro ? '#1e293b' : '#e2e8f0'
-  const corTexto = temaEscuro ? '#f1f5f9' : '#0f172a'
-  const corSub   = temaEscuro ? '#475569' : '#94a3b8'
-  const bgFiltro = temaEscuro ? '#0d1625' : '#ffffff'
-  const bgMes    = temaEscuro ? '#0a1020' : '#f8fafc'
+  const eventosDoDia = eventos.filter(ev => {
+    const d = new Date(ev.data_evento)
+    return d.getDate() === diaSelecionado && d.getMonth() === mes && d.getFullYear() === ano
+  })
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '2rem' }}>
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ color: temaEscuro ? '#f1f5f9' : '#0f172a', fontSize: '1.8rem', fontWeight: '900', marginBottom: '0.25rem' }}>
-          📅 Calendário
-        </h1>
-        <p style={{ color: corSub, fontSize: '0.9rem' }}>{filtrados.length} eventos programados</p>
-      </div>
-
-      <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
-        {modalidades.map(m => (
-          <button key={m} onClick={() => setFiltro(m)} style={{
-            padding: '6px 16px', borderRadius: '20px',
-            border: `1px solid ${filtro === m ? '#1d4ed8' : borda}`,
-            background: filtro === m ? '#1d4ed8' : bgFiltro,
-            color: filtro === m ? 'white' : corSub,
-            fontSize: '0.8rem', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s',
-          }}>{m}</button>
-        ))}
-      </div>
-
-      {Object.entries(porMes).map(([mes, evs]) => (
-        <div key={mes} style={{ marginBottom: '2rem' }}>
-          <div
-            onClick={() => setMesAtivo(mesAtivo === mes ? null : mes)}
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              background: bgMes, border: `1px solid ${borda}`,
-              borderRadius: '10px', padding: '0.75rem 1.2rem',
-              cursor: 'pointer', marginBottom: '0.5rem', userSelect: 'none',
-            }}
-          >
-            <span style={{ color: corTexto, fontWeight: '700', fontSize: '0.95rem', textTransform: 'capitalize' }}>
-              📆 {mes}
-            </span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <span style={{ background: '#1d4ed8', color: 'white', padding: '2px 10px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: '700' }}>
-                {evs.length} evento{evs.length > 1 ? 's' : ''}
-              </span>
-              <span style={{ color: corSub, fontSize: '0.7rem', display: 'inline-block', transform: mesAtivo === mes ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</span>
+    <div style={{ 
+      background: COLORS.bg, 
+      minHeight: '100vh', 
+      width: '100%', 
+      margin: 0, 
+      padding: '30px 20px', // Reduzi o padding superior
+      boxSizing: 'border-box' 
+    }}>
+      {/* Container Principal um pouco mais estreito (1200px) para não espalhar tanto */}
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: '1.1fr 0.9fr', // Proporção mais equilibrada entre os dois lados
+          gap: '25px',
+          alignItems: 'start'
+        }}>
+          
+          {/* LADO ESQUERDO: CALENDÁRIO COMPACTO */}
+          <div style={{ 
+            background: COLORS.card, 
+            borderRadius: '16px', 
+            padding: '25px', // Reduzi o padding interno do card
+            border: `1px solid ${COLORS.border}`,
+            boxShadow: '0 15px 35px rgba(0, 0, 0, 0.4)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+              <h2 style={{ fontSize: '1.6rem', fontWeight: '900', color: COLORS.text, margin: 0 }}>
+                {nomeMes} <span style={{ color: COLORS.accent }}>{ano}</span>
+              </h2>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={() => navegarMes(-1)} style={btnStyle}>{'<'}</button>
+                <button onClick={() => navegarMes(1)} style={btnStyle}>{'>'}</button>
+                <button onClick={() => {setDataNavegacao(new Date()); setDiaSelecionado(new Date().getDate())}} 
+                  style={{...btnStyle, width: 'auto', padding: '0 15px', background: COLORS.accent, border: 'none'}}>HOJE</button>
+              </div>
             </div>
-          </div>
 
-          {mesAtivo === mes && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-              {evs.map((evento, i) => {
-                const dt = formatarData(evento.data_evento)
-                const prazo = diasAte(evento.data_evento)
-                const urgente = prazo === 'Hoje' || prazo === 'Amanhã'
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '10px' }}>
+              {['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'].map(d => (
+                <div key={d} style={{ textAlign: 'center', color: COLORS.textMuted, fontSize: '0.75rem', fontWeight: '800', paddingBottom: '8px' }}>{d}</div>
+              ))}
+              
+              {Array.from({ length: primeiroDiaSemana }).map((_, i) => <div key={`empty-${i}`} />)}
+
+              {Array.from({ length: diasNoMes }).map((_, i) => {
+                const dia = i + 1
+                const temEvento = eventos.some(ev => {
+                  const d = new Date(ev.data_evento)
+                  return d.getDate() === dia && d.getMonth() === mes && d.getFullYear() === ano
+                })
+                const isSelecionado = diaSelecionado === dia
+
                 return (
-                  <div key={i} style={{
-                    background: bgCard, border: `1px solid ${borda}`,
-                    borderLeft: `3px solid ${urgente ? '#ef4444' : '#3b82f6'}`,
-                    borderRadius: '8px', padding: '0.9rem 1.2rem',
-                    display: 'grid', gridTemplateColumns: '64px 1fr auto',
-                    alignItems: 'center', gap: '1rem',
-                  }}>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ color: corSub, fontSize: '0.62rem', fontWeight: '700', letterSpacing: '1px' }}>{dt.diaSemana}</div>
-                      <div style={{ color: corTexto, fontSize: '1.5rem', fontWeight: '900', lineHeight: 1 }}>{dt.dia}</div>
-                      <div style={{ color: '#3b82f6', fontSize: '0.65rem', fontWeight: '700' }}>{dt.mes}</div>
-                    </div>
-                    <div>
-                      <span style={{ color: corSub, fontSize: '0.62rem', fontWeight: '600', letterSpacing: '1.5px' }}>
-                        {evento.icone} {evento.modalidade?.toUpperCase()}
-                      </span>
-                      <p style={{ color: corTexto, fontWeight: '700', fontSize: '0.92rem', margin: '2px 0' }}>{evento.nome}</p>
-                      <p style={{ color: corSub, fontSize: '0.75rem' }}>🕐 {dt.hora} · {evento.descricao_curta}</p>
-                    </div>
-                    <div style={{
-                      background: urgente ? 'rgba(239,68,68,0.1)' : 'rgba(59,130,246,0.1)',
-                      border: `1px solid ${urgente ? 'rgba(239,68,68,0.3)' : 'rgba(59,130,246,0.2)'}`,
-                      borderRadius: '8px', padding: '6px 14px', textAlign: 'center', whiteSpace: 'nowrap',
-                    }}>
-                      <div style={{ color: urgente ? '#ef4444' : '#3b82f6', fontSize: '0.72rem', fontWeight: '700' }}>{prazo}</div>
-                    </div>
+                  <div key={dia} onClick={() => setDiaSelecionado(dia)}
+                    style={{
+                      height: '70px', // DIMINUÍDO: De 100px para 70px
+                      borderRadius: '10px', 
+                      cursor: 'pointer',
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      background: isSelecionado ? COLORS.accent : COLORS.dayBg,
+                      border: `1px solid ${isSelecionado ? COLORS.accent : COLORS.border}`,
+                      transition: 'all 0.2s ease',
+                      position: 'relative'
+                    }}
+                  >
+                    <span style={{ fontWeight: '800', fontSize: '1.3rem', color: COLORS.text }}>{dia}</span>
+                    {temEvento && !isSelecionado && (
+                      <div style={{ 
+                        width: '6px', // DIMINUÍDO: De 8px para 6px
+                        height: '6px', 
+                        background: COLORS.accent, 
+                        borderRadius: '50%', 
+                        marginTop: '4px', 
+                        boxShadow: `0 0 8px ${COLORS.accent}` 
+                      }} />
+                    )}
                   </div>
                 )
               })}
             </div>
-          )}
-        </div>
-      ))}
+          </div>
 
-      {filtrados.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '4rem', color: corSub }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📭</div>
-          <p>Nenhum evento encontrado.</p>
+          {/* LADO DIREITO: LISTA DE EVENTOS */}
+          <div style={{ 
+            background: COLORS.card, 
+            borderRadius: '16px', 
+            padding: '25px', 
+            border: `1px solid ${COLORS.border}`,
+            position: 'sticky',
+            top: '30px'
+          }}>
+            <h3 style={{ 
+              margin: '0 0 20px 0', fontSize: '1rem', fontWeight: '900', 
+              color: COLORS.text, borderBottom: `1px solid ${COLORS.border}`, 
+              paddingBottom: '12px', textTransform: 'uppercase'
+            }}>
+              📅 Eventos <span style={{ color: COLORS.accent }}>• {diaSelecionado} {nomeMes.substring(0, 3)}</span>
+            </h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {eventosDoDia.length > 0 ? eventosDoDia.map((ev, i) => (
+                <div key={i} style={{ 
+                  background: COLORS.dayBg, padding: '12px', borderRadius: '10px', 
+                  borderLeft: `4px solid ${COLORS.accent}`,
+                  display: 'flex', gap: '12px', alignItems: 'center'
+                }}>
+                  <span style={{ fontSize: '1.5rem' }}>{ev.icone || '🏆'}</span>
+                  <div>
+                    <div style={{ fontSize: '0.65rem', color: COLORS.accent, fontWeight: 'bold' }}>{ev.modalidade}</div>
+                    <div style={{ fontWeight: 'bold', fontSize: '0.95rem', color: COLORS.text }}>{ev.nome}</div>
+                    <div style={{ fontSize: '0.8rem', color: COLORS.textMuted }}>{ev.descricao_curta}</div>
+                  </div>
+                </div>
+              )) : (
+                <div style={{ textAlign: 'center', padding: '30px 0' }}>
+                  <p style={{ color: COLORS.textMuted, fontSize: '0.85rem' }}>Nenhum evento.</p>
+                </div>
+              )}
+            </div>
+          </div>
+
         </div>
-      )}
+      </div>
+      
+      <style>{`
+        body, html { margin: 0 !important; padding: 0 !important; background-color: #030b15 !important; }
+        footer { display: none !important; }
+      `}</style>
     </div>
   )
+}
+
+const btnStyle = {
+  background: '#0d1f35', border: '1px solid #1e3a5f', color: 'white', minWidth: '35px', height: '35px', 
+  borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: '0.2s', fontSize: '0.9rem'
 }
 
 export default PaginaCalendario
